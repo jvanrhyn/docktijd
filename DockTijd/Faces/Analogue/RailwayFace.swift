@@ -7,7 +7,14 @@ struct RailwayFace: ClockFace {
     let kind = FaceKind.analogue
     let showsSeconds = true
 
+    var cachesStaticLayer: Bool { true }
+
     func draw(in ctx: CGContext, rect: CGRect, time: ClockTime, use24Hour: Bool) {
+        drawStatic(in: ctx, rect: rect, use24Hour: use24Hour)
+        drawDynamic(in: ctx, rect: rect, time: time, use24Hour: use24Hour)
+    }
+
+    func drawStatic(in ctx: CGContext, rect: CGRect, use24Hour: Bool) {
         typealias D = AnalogueDrawing
         let body = IconShape.bodyRect(in: rect)
         let u = body.width
@@ -24,6 +31,16 @@ struct RailwayFace: ClockFace {
         D.ticks(ctx, center: c, count: 12, from: r * 0.90, to: r * 0.97, width: u * 0.016, color: D.color(0x111111))
         let font = NSFont.systemFont(ofSize: u * 0.085, weight: .heavy)
         D.numerals(center: c, radius: r * 0.74, font: font, color: NSColor(cgColor: D.color(0x111111))!)
+        ctx.restoreGState()
+    }
+
+    func drawDynamic(in ctx: CGContext, rect: CGRect, time: ClockTime, use24Hour: Bool) {
+        typealias D = AnalogueDrawing
+        let body = IconShape.bodyRect(in: rect)
+        let u = body.width
+        let c = CGPoint(x: body.midX, y: body.midY)
+        let r = u * 0.43
+        ctx.saveGState()
         let a = D.angles(for: time)
         D.hand(ctx, center: c, angle: a.hour, length: r * 0.5, width: u * 0.045, tail: r * 0.1,
                color: D.color(0x111111), shadow: (u * 0.012, 0.25))
