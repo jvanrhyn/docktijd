@@ -1,0 +1,50 @@
+name: DockTijd
+options:
+  bundleIdPrefix: nl.docktijd
+  deploymentTarget:
+    macOS: "15.0"
+settings:
+  base:
+    SWIFT_VERSION: "6.0"
+    SWIFT_STRICT_CONCURRENCY: complete
+    CODE_SIGN_IDENTITY: "-"
+    CODE_SIGN_STYLE: Manual
+    DEVELOPMENT_TEAM: ""
+  configs:
+    Release:
+      ENABLE_HARDENED_RUNTIME: YES
+targets:
+  DockTijd:
+    type: application
+    platform: macOS
+    sources: [DockTijd]
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: nl.docktijd.app
+        GENERATE_INFOPLIST_FILE: YES
+        INFOPLIST_KEY_CFBundleDisplayName: DockTijd
+        INFOPLIST_KEY_LSUIElement: NO
+        INFOPLIST_KEY_NSPrincipalClass: NSApplication
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.utilities
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        ENABLE_APP_SANDBOX: YES
+  DockTijdTests:
+    type: bundle.unit-test
+    platform: macOS
+    sources: [DockTijdTests]
+    dependencies:
+      - target: DockTijd
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: nl.docktijd.tests
+        GENERATE_INFOPLIST_FILE: YES
+        TEST_HOST: "$(BUILT_PRODUCTS_DIR)/DockTijd.app/Contents/MacOS/DockTijd"
+        BUNDLE_LOADER: "$(TEST_HOST)"
+schemes:
+  DockTijd:
+    build:
+      targets:
+        DockTijd: all
+        DockTijdTests: [test]
+    test:
+      targets: [DockTijdTests]
