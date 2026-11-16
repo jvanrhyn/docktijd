@@ -5,6 +5,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let store = FaceStore()
     private let view = ClockView(frame: .zero)
     private var engine: ClockEngine!
+    private lazy var menuBuilder = DockMenuBuilder(store: store, loginItem: SMAppServiceLoginItem()) { [weak self] face in
+        self?.apply(face)
+    }
     private var observers: [(NotificationCenter, NSObjectProtocol)] = []
 
     func applicationDidFinishLaunching(_ notification: Notification) {
@@ -27,10 +30,13 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         engine?.stop()
     }
 
-    /// Switches the live face and redraws immediately.
-    func select(_ face: any ClockFace) {
-        store.selectedID = face.id
-        view.face = FaceRegistry.face(id: face.id)
+    func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
+        menuBuilder.makeMenu()
+    }
+
+    /// Switches the live face and redraws immediately (selection is already persisted by the menu).
+    func apply(_ face: any ClockFace) {
+        view.face = face
         engine.perSecond = face.showsSeconds
         view.use24Hour = SystemClockFormat.uses24Hour
         engine.reschedule()
