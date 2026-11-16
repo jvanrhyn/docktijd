@@ -1,6 +1,6 @@
 enum FaceRegistry {
     static let all: [any ClockFace] = [
-        ClassicFace(),
+        ClassicFace(), MinimalDarkFace(), RailwayFace(), AquaFace(), RetroGoldFace(),
     ]
 
     static func face(id: String) -> any ClockFace {
