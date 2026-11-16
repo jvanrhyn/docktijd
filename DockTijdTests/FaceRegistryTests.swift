@@ -2,7 +2,6 @@ import Testing
 @testable import DockTijd
 
 struct FaceRegistryTests {
-    @Test(.disabled("until all 10 faces land (Task 6)"))
     func hasTenFaces() {
         let all = FaceRegistry.all
         #expect(all.count == 10)
