@@ -5,6 +5,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     let store = FaceStore()
     private let view = ClockView(frame: .zero)
     private var engine: ClockEngine!
+    private var sleepTimer: Timer?
     private lazy var menuBuilder = DockMenuBuilder(store: store, loginItem: SMAppServiceLoginItem()) { [weak self] face in
         self?.apply(face)
     }
@@ -26,8 +27,28 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         observeSystem()
     }
 
-    func applicationWillTerminate(_ notification: Notification) {
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
         engine?.stop()
+        guard view.sleepProgress == 0 else { return .terminateLater }
+        // Brief fall-asleep fade (~0.35 s), then really quit.
+        let start = ProcessInfo.processInfo.systemUptime
+        let duration = 0.35
+        let timer = Timer(timeInterval: 1.0 / 30, repeats: true) { [weak self] _ in
+            MainActor.assumeIsolated {
+                guard let self else { return }
+                let p = min(1, (ProcessInfo.processInfo.systemUptime - start) / duration)
+                self.view.sleepProgress = p
+                NSApp.dockTile.display()
+                if p >= 1 {
+                    self.sleepTimer?.invalidate()
+                    self.sleepTimer = nil
+                    NSApp.reply(toApplicationShouldTerminate: true)
+                }
+            }
+        }
+        sleepTimer = timer
+        RunLoop.main.add(timer, forMode: .common)
+        return .terminateLater
     }
 
     func applicationDockMenu(_ sender: NSApplication) -> NSMenu? {
